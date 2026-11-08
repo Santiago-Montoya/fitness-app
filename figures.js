@@ -61,9 +61,10 @@
     "Knee push-ups":    { focus: "chest arms", anchor: "nKnee", ik: true,
                           a: { T: 56, H: 62, ...arms(180), nl1: 236, nl2: 270, fl1: 236, fl2: 270, nf: 270, ff: 270 },
                           b: { T: 76, H: 82, nl1: 256, fl1: 256 } },
-    "Superman hold":    { focus: "back glutes", anchor: "hip", hold: 1.2,
-                          a: { ...PRONE, ...arms(100) },
-                          b: { T: 80, H: 75, ...arms(78), nl1: 262, nl2: 262, fl1: 262, fl2: 262 } },
+    // belly and hips stay down; chest, arms and straight legs lift into a gentle banana curve
+    "Superman hold":    { focus: "back glutes", anchor: "hip", dur: 4.5, hold: 1.8,
+                          a: { ...PRONE, H: 100, ...arms(97), nf: 248, ff: 248 },
+                          b: { T: 72, H: 78, bend: -4, ...arms(66), nl1: 285, nl2: 285, fl1: 285, fl2: 285, nf: 255, ff: 255 } },
     "Plank":            { focus: "core", anchor: "nToe", dur: 4,
                           a: { T: 84, H: 86, na1: 180, na2: 90, fa1: 180, fa2: 90, nl1: 264, nl2: 264, fl1: 264, fl2: 264, nf: 170, ff: 170 },
                           b: { T: 84.6, H: 87 } },
