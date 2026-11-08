@@ -20,6 +20,7 @@
     --line: rgba(59, 47, 34, 0.07);
     --accent: #5f7a3a;
     --accent-ink: #f4efe3;
+    --glow: #f0b44c;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -30,6 +31,7 @@
       --line: rgba(234, 223, 200, 0.08);
       --accent: #8fae5e;
       --accent-ink: #1f1b16;
+      --glow: #f2c56a;
     }
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -103,13 +105,13 @@
 
   /* Figures */
   .fig { display: block; width: 100%; max-width: 340px; height: auto; aspect-ratio: 200 / 130; margin: 0 auto 18px; }
-  .fig path, .fig line { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-  .fig-near path { stroke: var(--ink); stroke-width: 3.4; }
-  .fig-near circle { fill: var(--ink); }
-  .fig-far path { stroke: var(--ink-soft); stroke-width: 3.4; opacity: 0.45; }
-  .fig-ground { stroke: var(--ink-soft); stroke-width: 1; opacity: 0.5; stroke-dasharray: 2 4; }
-  .fig-prop { stroke: var(--ink-soft); stroke-width: 2; opacity: 0.7; }
-
+  .fig-body { fill: var(--ink); }
+  .fig-body .fig-limb { stroke: var(--paper); stroke-width: 1.1; paint-order: stroke; }
+  .fig-far { fill: var(--ink-soft); opacity: 0.5; }
+  .fig-glow { fill: var(--glow); pointer-events: none; }
+  .fig-glow-core { opacity: 0.35; }
+  .fig-shadow { fill: var(--ink); opacity: 0.1; }
+  .fig-prop { fill: var(--paper-2); stroke: var(--ink-soft); stroke-width: 1.2; opacity: 0.9; }
   .ex .fig { width: min(290px, 44vh); margin-bottom: 4px; }
   #session { padding-bottom: 16px; }
   @media (max-height: 700px) {

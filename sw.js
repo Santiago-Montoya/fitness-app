@@ -1,5 +1,5 @@
 // Caches the app so it opens offline. Bump VERSION after changing files.
-const VERSION = "daily-v2";
+const VERSION = "daily-v3";
 const FILES = ["./", "index.html", "figures.js", "manifest.json", "icon.svg", "icon-180.png", "icon-512.png"];
 
 self.addEventListener("install", e => {
