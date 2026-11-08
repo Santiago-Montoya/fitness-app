@@ -100,17 +100,53 @@
   .seg button.on { background: var(--ink); color: var(--paper); }
   .hint { margin-top: 12px; font-size: 14px; font-style: italic; color: var(--ink-soft); }
 
+
+  /* Figures */
+  .fig { display: block; width: 100%; max-width: 340px; height: auto; aspect-ratio: 200 / 130; margin: 0 auto 18px; }
+  .fig path, .fig line { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .fig-near path { stroke: var(--ink); stroke-width: 3.4; }
+  .fig-near circle { fill: var(--ink); }
+  .fig-far path { stroke: var(--ink-soft); stroke-width: 3.4; opacity: 0.45; }
+  .fig-ground { stroke: var(--ink-soft); stroke-width: 1; opacity: 0.5; stroke-dasharray: 2 4; }
+  .fig-prop { stroke: var(--ink-soft); stroke-width: 2; opacity: 0.7; }
+
+  .ex .fig { width: min(290px, 44vh); margin-bottom: 4px; }
+  #session { padding-bottom: 16px; }
+  @media (max-height: 700px) {
+    #session { padding-top: 14px; }
+    .ex .fig { width: min(290px, 34vh); }
+    .ex-name { font-size: 28px; }
+    .ex-cue { font-size: 16px; margin-bottom: 14px; }
+    .ex-amt { font-size: 60px; }
+    .actions { margin-top: 14px; }
+    .btn { padding: 16px 20px; }
+  }
+  .row { cursor: pointer; }
+  .row .name::after { content: " ›"; color: var(--ink-soft); opacity: 0.6; }
+
+  .sheet-bg {
+    position: fixed; inset: 0; background: rgba(30, 24, 16, 0.35); z-index: 10;
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .sheet {
+    width: 100%; max-width: 440px; background: var(--paper); border-radius: 22px 22px 0 0;
+    padding: 26px 22px calc(24px + env(safe-area-inset-bottom)); text-align: center;
+    box-shadow: 0 -8px 30px rgba(0,0,0,0.15);
+  }
+  .sheet h3 { font-size: 30px; font-weight: 400; margin-bottom: 8px; }
+  .sheet p { font-size: 17px; font-style: italic; color: var(--ink-soft); line-height: 1.45; margin-bottom: 22px; }
+
   /* Session */
   .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
   .x { background: none; border: 0; color: var(--ink-soft); font-size: 15px; padding: 6px 0; cursor: pointer; }
-  .bar { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 48px; }
+  .bar { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
   .bar i { display: block; height: 100%; background: var(--ink); width: 0; transition: width .3s; }
   .ex { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; }
-  .ex-name { font-size: 38px; line-height: 1.15; font-weight: 400; margin-bottom: 14px; }
-  .ex-cue { font-size: 18px; font-style: italic; color: var(--ink-soft); line-height: 1.45; max-width: 320px; margin: 0 auto 40px; }
-  .ex-amt { font-size: 88px; line-height: 1; letter-spacing: -0.02em; }
+  .ex-name { font-size: 34px; line-height: 1.15; font-weight: 400; margin-bottom: 10px; }
+  .ex-cue { font-size: 18px; font-style: italic; color: var(--ink-soft); line-height: 1.45; max-width: 320px; margin: 0 auto 24px; }
+  .ex-amt { font-size: 76px; line-height: 1; letter-spacing: -0.02em; }
   .ex-unit { margin-top: 8px; }
-  .actions { display: flex; flex-direction: column; gap: 6px; margin-top: 40px; }
+  .actions { display: flex; flex-direction: column; gap: 6px; margin-top: 28px; }
 
   .finish { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; }
   .finish h2 { font-size: 46px; font-weight: 400; margin-bottom: 12px; }
@@ -162,6 +198,7 @@
   <div class="bar"><i id="bar"></i></div>
 
   <div class="ex" id="exView">
+    <svg class="fig" id="exFig" aria-hidden="true"></svg>
     <h1 class="ex-name" id="exName"></h1>
     <p class="ex-cue" id="exCue"></p>
     <div class="ex-amt" id="exAmt"></div>
@@ -179,6 +216,16 @@
   </div>
 </main>
 
+<div class="sheet-bg hidden" id="sheet">
+  <div class="sheet">
+    <svg class="fig" id="sheetFig" aria-hidden="true"></svg>
+    <h3 id="sheetName"></h3>
+    <p id="sheetCue"></p>
+    <button class="btn" id="sheetClose" style="justify-content:center">Got it</button>
+  </div>
+</div>
+
+<script src="figures.js"></script>
 <script>
 /*
   Three gentle routines rotate day by day (A, B, C).
@@ -274,8 +321,8 @@ function renderHome() {
 
   const r = todaysRoutine();
   $("planTitle").textContent = "Today · " + r.name;
-  $("planList").innerHTML = r.moves.map(m =>
-    `<div class="row"><span>${m.n}</span><span class="amt sans">${amount(m).short}</span></div>`).join("");
+  $("planList").innerHTML = r.moves.map((m, i) =>
+    `<div class="row" data-i="${i}"><span class="name">${m.n}</span><span class="amt sans">${amount(m).short}</span></div>`).join("");
 
   const done = doneOn(todayKey());
   $("startBtn").classList.toggle("hidden", done);
@@ -294,6 +341,19 @@ $("levelSeg").addEventListener("click", e => {
   if (l === undefined || +l === state.level) return;
   state.level = +l; state.sinceLevel = 0; save(); renderHome();
 });
+
+// tap a move on the home screen to see how it's done
+$("planList").addEventListener("click", e => {
+  const row = e.target.closest(".row"); if (!row) return;
+  const m = todaysRoutine().moves[+row.dataset.i];
+  $("sheetName").textContent = m.n;
+  $("sheetCue").textContent = m.c;
+  Figures.play($("sheetFig"), m.n);
+  $("sheet").classList.remove("hidden");
+});
+function closeSheet() { Figures.stop($("sheetFig")); $("sheet").classList.add("hidden"); }
+$("sheetClose").onclick = closeSheet;
+$("sheet").addEventListener("click", e => { if (e.target === $("sheet")) closeSheet(); });
 
 // ---------- session ----------
 let moves = [], idx = 0, timer = null, remaining = 0, phase = "idle";
@@ -320,6 +380,7 @@ function renderStep() {
   $("stepCount").textContent = `${idx + 1} / ${moves.length}`;
   $("bar").style.width = (idx / moves.length * 100) + "%";
   $("exName").textContent = m.n;
+  Figures.play($("exFig"), m.n);
   $("exCue").textContent = m.c;
   $("exAmt").textContent = a.v;
   $("exUnit").textContent = a.unit;
@@ -363,6 +424,7 @@ function finish() {
   const k = todayKey(), first = !doneOn(k);
   if (first) { state.days.push(k); state.sinceLevel++; save(); }
   phase = "finished";
+  Figures.stop($("exFig"));
   $("bar").style.width = "100%";
   $("exView").classList.add("hidden");
   $("finishView").classList.remove("hidden");
@@ -376,7 +438,7 @@ $("startBtn").onclick = startSession;
 $("againBtn").onclick = startSession;
 $("nextBtn").onclick = next;
 $("skipBtn").onclick = advance;
-$("quitBtn").onclick = () => { clearTimer(); show("home"); renderHome(); };
+$("quitBtn").onclick = () => { clearTimer(); Figures.stop($("exFig")); show("home"); renderHome(); };
 
 // re-render if the app is left open past midnight
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("home").classList.contains("hidden")) renderHome(); });
