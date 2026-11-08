@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daily</title>
+<meta name="theme-color" content="#e9dfcb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Daily">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+  :root {
+    --paper: #e9dfcb;
+    --paper-2: #e1d5bd;
+    --ink: #3b2f22;
+    --ink-soft: #7a6a55;
+    --line: rgba(59, 47, 34, 0.07);
+    --accent: #5f7a3a;
+    --accent-ink: #f4efe3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1f1b16;
+      --paper-2: #29241d;
+      --ink: #eadfc8;
+      --ink-soft: #a89880;
+      --line: rgba(234, 223, 200, 0.08);
+      --accent: #8fae5e;
+      --accent-ink: #1f1b16;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 32px 32px;
+    color: var(--ink);
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .wrap {
+    max-width: 440px; margin: 0 auto; min-height: 100%;
+    padding: 28px 22px 40px; display: flex; flex-direction: column;
+  }
+  .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  .label {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft);
+  }
+  .hidden { display: none !important; }
+
+  /* Home */
+  .date { margin-bottom: 36px; }
+  .streak { text-align: center; margin: 8px 0 28px; }
+  .streak-num { font-size: 104px; line-height: 1; font-weight: 400; letter-spacing: -0.02em; }
+  .streak-sub { margin-top: 6px; font-style: italic; color: var(--ink-soft); font-size: 18px; }
+
+  .week { display: flex; justify-content: space-between; margin: 0 4px 36px; }
+  .day { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 36px; }
+  .dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 1.5px solid var(--ink-soft); opacity: 0.6;
+  }
+  .dot.done { background: var(--ink); border-color: var(--ink); opacity: 1; }
+  .dot.today { opacity: 1; border-color: var(--ink); }
+  .day .label { font-size: 11px; letter-spacing: 0.06em; }
+
+  .plan { border-top: 1px solid var(--ink-soft); margin-bottom: 28px; }
+  .plan-head { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 0 6px; }
+  .row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 19px;
+  }
+  .row .amt { font-size: 15px; color: var(--ink-soft); }
+
+  .btn {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; border: 0; border-radius: 14px; padding: 20px 22px;
+    background: var(--accent); color: var(--accent-ink);
+    font: 600 18px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    cursor: pointer;
+  }
+  .btn:active { transform: scale(0.99); opacity: 0.92; }
+  .btn.ghost { background: transparent; color: var(--ink-soft); justify-content: center; font-weight: 500; font-size: 15px; padding: 14px; }
+  .done-note { text-align: center; padding: 22px 0; font-size: 20px; font-style: italic; }
+
+  .level { margin-top: auto; padding-top: 36px; text-align: center; }
+  .seg { display: inline-flex; border: 1px solid var(--ink-soft); border-radius: 999px; padding: 3px; margin-top: 10px; }
+  .seg button {
+    border: 0; background: transparent; color: var(--ink-soft); border-radius: 999px;
+    padding: 8px 16px; font: 500 14px -apple-system, BlinkMacSystemFont, sans-serif; cursor: pointer;
+  }
+  .seg button.on { background: var(--ink); color: var(--paper); }
+  .hint { margin-top: 12px; font-size: 14px; font-style: italic; color: var(--ink-soft); }
+
+  /* Session */
+  .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .x { background: none; border: 0; color: var(--ink-soft); font-size: 15px; padding: 6px 0; cursor: pointer; }
+  .bar { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 48px; }
+  .bar i { display: block; height: 100%; background: var(--ink); width: 0; transition: width .3s; }
+  .ex { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+  .ex-name { font-size: 38px; line-height: 1.15; font-weight: 400; margin-bottom: 14px; }
+  .ex-cue { font-size: 18px; font-style: italic; color: var(--ink-soft); line-height: 1.45; max-width: 320px; margin: 0 auto 40px; }
+  .ex-amt { font-size: 88px; line-height: 1; letter-spacing: -0.02em; }
+  .ex-unit { margin-top: 8px; }
+  .actions { display: flex; flex-direction: column; gap: 6px; margin-top: 40px; }
+
+  .finish { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+  .finish h2 { font-size: 46px; font-weight: 400; margin-bottom: 12px; }
+  .finish p { font-size: 19px; font-style: italic; color: var(--ink-soft); margin-bottom: 44px; line-height: 1.45; }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<main id="home" class="wrap">
+  <div class="date label" id="date"></div>
+
+  <div class="streak">
+    <div class="streak-num" id="streak">0</div>
+    <div class="streak-sub" id="streakSub">days in a row</div>
+  </div>
+
+  <div class="week" id="week"></div>
+
+  <section class="plan">
+    <div class="plan-head">
+      <span class="label" id="planTitle">Today</span>
+      <span class="label" id="planTime">~8 min</span>
+    </div>
+    <div id="planList"></div>
+  </section>
+
+  <button class="btn" id="startBtn"><span>Begin</span><span>→</span></button>
+  <div class="done-note hidden" id="doneNote">Done for today. See you tomorrow.</div>
+  <button class="btn ghost hidden" id="againBtn">Do it again anyway</button>
+
+  <div class="level">
+    <div class="label">Level</div>
+    <div class="seg" id="levelSeg">
+      <button data-l="0">Gentle</button>
+      <button data-l="1">Steady</button>
+      <button data-l="2">Strong</button>
+    </div>
+    <div class="hint" id="levelHint"></div>
+  </div>
+</main>
+
+<!-- SESSION -->
+<main id="session" class="wrap hidden">
+  <div class="top">
+    <span class="label" id="stepCount">1 / 6</span>
+    <button class="x sans" id="quitBtn">Stop</button>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+
+  <div class="ex" id="exView">
+    <h1 class="ex-name" id="exName"></h1>
+    <p class="ex-cue" id="exCue"></p>
+    <div class="ex-amt" id="exAmt"></div>
+    <div class="ex-unit label" id="exUnit"></div>
+  </div>
+
+  <div class="finish hidden" id="finishView">
+    <h2>Done.</h2>
+    <p id="finishMsg">That's another day.</p>
+  </div>
+
+  <div class="actions">
+    <button class="btn" id="nextBtn"><span id="nextLabel">Done</span><span>→</span></button>
+    <button class="btn ghost" id="skipBtn">Skip</button>
+  </div>
+</main>
+
+<script>
+/*
+  Three gentle routines rotate day by day (A, B, C).
+  Each move has three amounts: Gentle / Steady / Strong.
+  Volume stays well below failure on purpose — the goal is showing up daily, not getting sore.
+  t = seconds (timed), r = reps. "side: true" means per side.
+*/
+const ROUTINES = [
+  { name: "Push & legs", moves: [
+    { n: "Arm circles",      c: "Small circles, then big. Both directions.",           t: [30, 40, 45] },
+    { n: "Incline push-ups", c: "Hands on a counter or wall. Lower slow, push easy.",   r: [6, 8, 10] },
+    { n: "Squats",           c: "Sit back like there's a chair. Stand tall.",          r: [8, 10, 12] },
+    { n: "Glute bridge",     c: "Lying down, feet flat. Lift hips, squeeze, lower.",    r: [8, 10, 12] },
+    { n: "Dead bug",         c: "On your back. Opposite arm and leg reach out slowly.", r: [4, 6, 8], side: true },
+    { n: "Child's pose",     c: "Knees wide, sink back, breathe.",                      t: [30, 40, 45] },
+  ]},
+  { name: "Back & balance", moves: [
+    { n: "March in place",   c: "Knees up, arms swinging. Easy pace.",                  t: [30, 40, 45] },
+    { n: "Bird dog",         c: "On hands and knees. Reach opposite arm and leg.",      r: [4, 6, 8], side: true },
+    { n: "Reverse lunge",    c: "Hold a wall if you need. Step back, sink, return.",    r: [4, 6, 8], side: true },
+    { n: "Prone Y raise",    c: "Face down, arms in a Y. Lift thumbs, hold one beat.",  r: [6, 8, 10] },
+    { n: "Side plank",       c: "On your forearm and knees. Hips up, breathe.",         t: [10, 15, 20], side: true },
+    { n: "Hip flexor stretch", c: "Half-kneeling. Tuck hips, lean gently forward.",     t: [20, 30, 30], side: true },
+  ]},
+  { name: "Core & mobility", moves: [
+    { n: "Cat–cow",          c: "On hands and knees. Round, then arch. Slow.",          t: [30, 40, 45] },
+    { n: "Calf raises",      c: "Rise onto your toes, pause, lower slow.",              r: [10, 12, 15] },
+    { n: "Knee push-ups",    c: "Straight line from knees to head. Stop before it's hard.", r: [4, 6, 8] },
+    { n: "Superman hold",    c: "Face down. Lift chest and legs a little. Breathe.",    t: [10, 15, 20] },
+    { n: "Plank",            c: "On your forearms. Knees down is fine.",                t: [15, 20, 30] },
+    { n: "Forward fold",     c: "Soft knees. Let your head hang heavy.",                t: [30, 40, 45] },
+  ]},
+];
+
+const LEVELS = ["Gentle", "Steady", "Strong"];
+const KEY = "daily-calisthenics-v1";
+const $ = id => document.getElementById(id);
+
+// ---------- storage ----------
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || { days: [], level: 0, sinceLevel: 0 }; }
+  catch { return { days: [], level: 0, sinceLevel: 0 }; }
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
+let state = load();
+
+// ---------- dates ----------
+const dayKey = d => {
+  const x = new Date(d); x.setHours(12, 0, 0, 0);
+  return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0");
+};
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const todayKey = () => dayKey(new Date());
+const doneOn = k => state.days.includes(k);
+
+function streak() {
+  let d = new Date(), n = 0;
+  if (!doneOn(dayKey(d))) d = addDays(d, -1);   // streak still alive if yesterday was done
+  while (doneOn(dayKey(d))) { n++; d = addDays(d, -1); }
+  return n;
+}
+
+function todaysRoutine() {
+  const epochDay = Math.floor(new Date(todayKey() + "T12:00:00").getTime() / 86400000);
+  return ROUTINES[epochDay % ROUTINES.length];
+}
+
+function amount(m) {
+  const lv = state.level;
+  if (m.t) return { v: m.t[lv], unit: m.side ? "seconds each side" : "seconds", short: m.t[lv] + "s" + (m.side ? " / side" : "") };
+  return { v: m.r[lv], unit: m.side ? "reps each side" : "reps", short: "×" + m.r[lv] + (m.side ? " / side" : "") };
+}
+
+// ---------- home ----------
+function renderHome() {
+  const now = new Date();
+  $("date").textContent = now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+
+  const s = streak();
+  $("streak").textContent = s;
+  $("streakSub").textContent = s === 0 ? "Start today." : s === 1 ? "day in a row" : "days in a row";
+
+  // last 7 days, ending today
+  const week = $("week"); week.innerHTML = "";
+  for (let i = 6; i >= 0; i--) {
+    const d = addDays(now, -i), k = dayKey(d);
+    const el = document.createElement("div");
+    el.className = "day";
+    el.innerHTML = `<span class="dot ${doneOn(k) ? "done" : ""} ${i === 0 ? "today" : ""}"></span>
+                    <span class="label">${d.toLocaleDateString(undefined, { weekday: "narrow" })}</span>`;
+    week.appendChild(el);
+  }
+
+  const r = todaysRoutine();
+  $("planTitle").textContent = "Today · " + r.name;
+  $("planList").innerHTML = r.moves.map(m =>
+    `<div class="row"><span>${m.n}</span><span class="amt sans">${amount(m).short}</span></div>`).join("");
+
+  const done = doneOn(todayKey());
+  $("startBtn").classList.toggle("hidden", done);
+  $("doneNote").classList.toggle("hidden", !done);
+  $("againBtn").classList.toggle("hidden", !done);
+
+  document.querySelectorAll("#levelSeg button").forEach(b => b.classList.toggle("on", +b.dataset.l === state.level));
+  $("levelHint").textContent =
+    state.level < 2 && state.sinceLevel >= 14
+      ? `${state.sinceLevel} sessions at ${LEVELS[state.level]}. Try ${LEVELS[state.level + 1]} when it feels easy.`
+      : state.level === 0 ? "Stay here as long as you like." : "";
+}
+
+$("levelSeg").addEventListener("click", e => {
+  const l = e.target.dataset && e.target.dataset.l;
+  if (l === undefined || +l === state.level) return;
+  state.level = +l; state.sinceLevel = 0; save(); renderHome();
+});
+
+// ---------- session ----------
+let moves = [], idx = 0, timer = null, remaining = 0, phase = "idle";
+
+function show(id) {
+  ["home", "session"].forEach(x => $(x).classList.toggle("hidden", x !== id));
+  window.scrollTo(0, 0);
+}
+
+function startSession() {
+  moves = todaysRoutine().moves; idx = 0;
+  $("exView").classList.remove("hidden");
+  $("finishView").classList.add("hidden");
+  $("skipBtn").classList.remove("hidden");
+  show("session");
+  renderStep();
+}
+
+function clearTimer() { if (timer) clearInterval(timer); timer = null; }
+
+function renderStep() {
+  clearTimer();
+  const m = moves[idx], a = amount(m);
+  $("stepCount").textContent = `${idx + 1} / ${moves.length}`;
+  $("bar").style.width = (idx / moves.length * 100) + "%";
+  $("exName").textContent = m.n;
+  $("exCue").textContent = m.c;
+  $("exAmt").textContent = a.v;
+  $("exUnit").textContent = a.unit;
+  if (m.t) { phase = "ready"; remaining = a.v * (m.side ? 2 : 1); $("nextLabel").textContent = "Start timer"; }
+  else     { phase = "reps"; $("nextLabel").textContent = "Done"; }
+}
+
+function runTimer() {
+  const m = moves[idx], per = amount(m).v;
+  phase = "running";
+  $("nextLabel").textContent = "Done early";
+  const tick = () => {
+    // for per-side holds, show the countdown for the current side
+    const shown = m.side ? ((remaining - 1) % per) + 1 : remaining;
+    $("exAmt").textContent = remaining > 0 ? shown : 0;
+    if (m.side) $("exUnit").textContent = remaining > per ? "seconds · first side" : "seconds · second side";
+    if (m.side && remaining === per) buzz(80);
+    if (remaining <= 0) { clearTimer(); buzz(200); phase = "over"; $("nextLabel").textContent = "Next"; return; }
+    remaining--;
+  };
+  tick();
+  timer = setInterval(tick, 1000);
+}
+
+function buzz(ms) { try { navigator.vibrate && navigator.vibrate(ms); } catch {} }
+
+function next() {
+  if (phase === "finished") { show("home"); renderHome(); return; }
+  if (phase === "ready") { runTimer(); return; }
+  advance();
+}
+
+function advance() {
+  clearTimer();
+  idx++;
+  if (idx < moves.length) { renderStep(); return; }
+  finish();
+}
+
+function finish() {
+  const k = todayKey(), first = !doneOn(k);
+  if (first) { state.days.push(k); state.sinceLevel++; save(); }
+  phase = "finished";
+  $("bar").style.width = "100%";
+  $("exView").classList.add("hidden");
+  $("finishView").classList.remove("hidden");
+  $("skipBtn").classList.add("hidden");
+  const s = streak();
+  $("finishMsg").textContent = s > 1 ? `${s} days in a row. Same time tomorrow.` : "Day one. Same time tomorrow.";
+  $("nextLabel").textContent = "Close";
+}
+
+$("startBtn").onclick = startSession;
+$("againBtn").onclick = startSession;
+$("nextBtn").onclick = next;
+$("skipBtn").onclick = advance;
+$("quitBtn").onclick = () => { clearTimer(); show("home"); renderHome(); };
+
+// re-render if the app is left open past midnight
+document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("home").classList.contains("hidden")) renderHome(); });
+
+renderHome();
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
