@@ -447,7 +447,18 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && !$
 
 renderHome();
 
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+// Stay up to date: check for a new version whenever the app is opened,
+// and reload once it's installed (but never in the middle of a workout).
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(reg => {
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) reg.update().catch(() => {}); });
+  }).catch(() => {});
+  let reloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (reloading || !$("session").classList.contains("hidden")) return;
+    reloading = true; location.reload();
+  });
+}
 </script>
 </body>
 </html>
